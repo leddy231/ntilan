@@ -44,6 +44,8 @@ GEM
     rack (2.0.5)
     rack-protection (2.0.3)
       rack
+    rack-ssl (1.4.1)
+      rack
     sanitize (4.6.5)
       crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
@@ -68,6 +70,9 @@ PLATFORMS
 DEPENDENCIES
   certified (>= 1.0.0)
   firebase (>= 0.2.8)
+  jwt
+  rack-protection (>= 1.5.5)
+  rack-ssl
   sanitize (>= 4.6.5)
   sinatra (>= 2.0.3)
 
