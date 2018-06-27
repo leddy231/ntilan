@@ -1,0 +1,46 @@
+<div class = "centerHorizontal">
+    <a class = "tab selected" id = "tablesTab"><p>Platser</p></a>
+    <a class = "tab" id = "usersTab"><p>Användare</p></a>
+    <a class = "tab" id = "settingsTab"><p>Ändra</p></a>
+</div>
+<div id = "tablesDiv">
+    <%= erb :tables, :layout => false %>
+</div>
+<div id = "usersDiv" class = "hidden">
+    <% users = $firebase.get("users").body.to_a.sort!{|a, b| a[1]["name"].downcase <=> b[1]["name"].downcase} %>
+    <table class = "adminTable">
+        <tr>
+            <th>Namn</th>
+            <th>Email</th>
+            <th>Sittplats</th>
+            <th></th>
+        </tr>
+        <% for user in users do %>
+            <% id = user[0] %>
+            <% user = user[1] %>
+            <% table = user["tables"] %>
+            <% table = table ? table["#{$active}"] : nil %>
+            <tr>
+                <td><%= user["name"] %></td>
+                <td><%= user["email"] %></td>
+                <td><%= table %></td>
+                <td>
+                    <% if table %>
+                    <input class = "button" type="button" value="Avboka" onclick='adminCancel("<%= id %>");'/>
+                    <% end %>
+                </td>
+            </tr>
+        <% end %>
+    </table>
+</div>
+
+<div id = "settingsDiv" class = "hidden" >
+    <h1>Settings</h1>
+    <select>
+        <% for option in $firebase.get("lans").body%>
+            <option><%= option[0] %></option>
+        <% end %>
+    </select>
+</div>
+
+<script src = "admin.js"></script>

@@ -1,0 +1,52 @@
+<div class="hidden" id="loginDiv">
+	<div class = "centerHorizontal">
+		<a class = "tab selected" id = "loginTab"><p>Login</p></a>
+		<a class = "tab" id = "registerTab"><p>Registrera</p></a>
+	</div>
+	<div class = "centerHorizontal">
+		<form id = "loginForm">
+			<div class = "hidden" id = "registerNameDiv">
+				<label>Namn:</label>
+				<input id = "registerName" type="text" /><br />
+			</div>
+			<label>Email:</label>
+			<input id = "loginEmail" type="email" /><br />
+			<label>Lösenord:</label>
+			<input id = "loginPassword" type="password" /><br />
+			<div class = "hidden" id = "registerPasswordDiv">
+				<label>Upprepa lösenord:</label>
+				<input id = "registerPassword2" type="password" /><br />
+			</div>
+			<br />
+			<div class = "centerHorizontal"><input class = "button" type="button" id="loginButton" value="Logga in"/></div>
+			<p class = "error" id="loginError"></p>
+		</form>
+	</div>
+</div>
+
+<div class = "hidden" id = "bookingDiv">
+	<h1>Platsbokning</h1>
+	<div class = "centerHorizontal">
+		<p id = "userName"> </p>
+		<input class = "button" type="button" id ="logoutButton" value="Logga ut"/>
+		<input class = "button" type="button" id = "saveTable" value="Spara" disabled/>
+		<input class = "button" type="button" id = "cancelTable" value="Avboka" disabled/>
+		<%= erb :spinner %>
+	</div>
+	
+	<div class = "tables centerHorizontal">
+		<div id = "tablesHere">
+		</div>
+	</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+<script src="booking.js"></script>
+
+<div class = "card">
+	<p>
+		En bordsplats är 80x70cm.<br />
+		Användare och data hanteras säkert av <a target="_blank" href="https://firebase.google.com/">Google Firebase.</a><br />
+		Inga lösenord skickas till servern, <br /> och de kan inte på något sätt kommas åt av någon på ITG.
+	</p>
+</div>

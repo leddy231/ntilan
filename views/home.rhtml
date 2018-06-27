@@ -1,0 +1,48 @@
+<div class="card">
+	<h1>Nedräkning till nästa lan</h1>
+	<h2 id = "targetDate"></h2>
+	<h2 id = "countdown"></h2>
+	<script>
+		var countDownDate = <%= $firebase.get('lans/' + $active.to_s + '/time').body %> * 1000;
+		var targetDate = new Date(countDownDate).toLocaleString();
+		document.getElementById("targetDate").innerHTML = targetDate;
+		x = setInterval(countDown, 1000);
+		function countDown() {
+		  var now = new Date().getTime();
+		  var distance = countDownDate - now;
+			var time = new Date(distance);
+		  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+		  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+		  if (distance < 0) {
+		    //clearInterval(x);
+		    document.getElementById("countdown").innerHTML = "";
+		  } else {
+				document.getElementById("countdown").innerHTML = days + "d " + hours + "t "
+				+ minutes + "m " + seconds + "s";
+			}
+		}
+	</script>
+</div>
+<div id = "images">
+	<div class = "card backgroundImages">
+		<% Dir.foreach(File.dirname(__FILE__) + "/../public/background") do |file|%>
+			<% next if file == "." or file == ".." or file == ".DS_Store"%>
+			<img class = "tileImage" src = "background/<%= file %>">
+		<% end %>
+	</div>
+</div>
+<div class="card">
+	<h1>Om NTI LAN</h1>
+	<p>
+		LANet hålls av elever på skolan i sammarbete med lärare och tekniker.<br />
+		Vid frågar kontakta Crew på Discord (länk åvan) eller prata med Teknikern på skolan.
+	</p>
+</div>
+<div class ="card" id = "guldkrets">
+	<h1>Vinnare av Guldretsen för "Årets projekt" 2018</h1>
+	<div class="centerHorizontal">
+		<img src="guldkrets.png">
+	</div>
+</div>

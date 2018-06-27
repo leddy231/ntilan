@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<title>NTI Lan</title>
+		<link rel="stylesheet" type="text/css" href="index.css">
+		<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/png" href="ntilogoNewSquare.png"/>
+	</head>
+	<body>
+		<div id="navbar">
+			<img src="ntilogoNew.png">
+			<a class = "tab" href="index"><p>Home</p></a>
+			<a class = "tab" href="rules"><p>Regler</p></a>
+			<a class = "tab" href="booking"><p>Platsbokning</p></a>
+			<a class = "tab" href="https://discord.gg/PWFHsDu" target="_blank">
+				<p>Discord <i class="material-icons" id="replyIcon">reply</i></p>
+			</a>
+			<a class = "tab" href="lan_lapp.docx">
+				<p>Lan blankett <i class="material-icons">file_download</i></p>
+			</a>
+		</div>
+		<div id="main">
+			<%= yield %>
+		</div>
+	</body>
+</html>

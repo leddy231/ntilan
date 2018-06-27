@@ -1,0 +1,29 @@
+<% tables = $firebase.get("lans/#{$active}/sections").body %>
+<% users = $firebase.get("users").body %>
+<% for section in tables do %>
+	<div class = "section">
+		<% for row in section[1] do %>
+			<ul class = "row">
+				<% row[1].each.with_index do |seat, index| %>
+				<% next if seat == nil %>
+				<% if seat.is_a? Array %>
+					<% index = seat[0] %>
+					<% seat = seat[1] %>
+				<% end %>
+				<% id = section[0].to_s + "-" + row[0].to_s + "-" + index.to_s %>
+				<% className = seat ? "taken" : ""%>
+				<li>
+					<span class="hasTooltip">
+						<a onclick = "book('<%= id %>');" id = "<%= id %>" class = "<%= className %>">
+							<%= index %>
+						</a>
+						<% if seat %>
+							<span class = "tooltipText"><%= users[seat]["name"].capitalize %></span>
+						<% end %>
+					</span>
+				</li>
+				<% end %>
+			</ul>
+		<% end %>
+	</div>
+<% end %>
