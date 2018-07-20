@@ -1,5 +1,6 @@
 {
   "devUsesProdEnviromnent": true,
+  "mhVersion": "0.2.1",
   "environmentKeys": [
     "fire_base_url",
     "fire_project_id",
@@ -8,5 +9,9 @@
     "fire_client_email",
     "fire_client_id",
     "fire_client_x509_cert_url"
-  ]
+  ],
+  "customGems": {
+    "rack/ssl": "rack-ssl",
+    "net/http": false
+  }
 }

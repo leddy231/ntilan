@@ -27,6 +27,7 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     memoist (0.16.0)
+    mini-heroku (0.2.2)
     mini_portile2 (2.3.0)
     multi_json (1.13.1)
     multipart-post (2.0.0)
@@ -70,14 +71,14 @@ PLATFORMS
 DEPENDENCIES
   certified (>= 1.0.0)
   firebase (>= 0.2.8)
-  jwt
-  rack-protection (>= 1.5.5)
-  rack-ssl
+  jwt (>= 2.1.0)
+  mini-heroku (>= 0.2.2)
+  rack-ssl (>= 1.4.1)
   sanitize (>= 4.6.5)
   sinatra (>= 2.0.3)
 
 RUBY VERSION
-   ruby 2.3.3p222
+   ruby 2.4.4p296
 
 BUNDLED WITH
-   1.16.1
+   1.16.3

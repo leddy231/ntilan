@@ -3,27 +3,31 @@ require "./verifier"
 require "certified"
 require "sanitize"
 require 'sinatra'
+require "mini-heroku"
 
 firebase = {
 	"type": "service_account",
 	"auth_uri": "https://accounts.google.com/o/oauth2/auth",
 	"token_uri": "https://accounts.google.com/o/oauth2/token",
 	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-	"project_id": ENV["fire_project_id"],
-	"private_key_id": ENV["fire_private_key_id"],
-	"private_key": ENV["fire_private_key"].gsub("_n_", "\n").gsub("_s_", " "),
-	"client_email": ENV["fire_client_email"],
-	"client_id": ENV["fire_client_id"],
-	"client_x509_cert_url": ENV["fire_client_x509_cert_url"]
+	"project_id": MH.env("fire_project_id"),
+	"private_key_id": MH.env("fire_private_key_id"),
+	"private_key": MH.env("fire_private_key").gsub("_n_", "\n").gsub("_s_", " "),
+	"client_email": MH.env("fire_client_email"),
+	"client_id": MH.env("fire_client_id"),
+	"client_x509_cert_url": MH.env("fire_client_x509_cert_url")
 }
 
-$firebase = Firebase::Client.new(ENV["fire_base_url"], firebase.to_json)
-$verifier = FirebaseIDTokenVerifier.new(ENV["fire_project_id"])
+$firebase = Firebase::Client.new(MH.env("fire_base_url"), firebase.to_json)
+$verifier = FirebaseIDTokenVerifier.new(MH.env("fire_project_id"))
 $active = $firebase.get("active").body
 $adminUID = $firebase.get("admin").body
 
 if Sinatra::Application.environment == :development
 	use Rack::Logger
+	get '/exit' do
+		Process.kill('TERM', Process.pid)
+	end
 else
 	require 'rack/ssl'
 	use Rack::SSL
@@ -140,10 +144,6 @@ end
 
 get "/spinner" do
 	erb :spinner
-end
-
-get '/exit' do
-  Process.kill('TERM', Process.pid)
 end
 
 not_found do
