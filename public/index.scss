@@ -1,6 +1,7 @@
 $mainDark: #333333;
 $background: #222222;
 $accent: #4b0082;
+$accent2: #c400e5;
 $text: white;
 $itgBlue: #009cdc;
 $itgPink: #ec0089;
@@ -67,37 +68,32 @@ $selectRed: #750000;
 .hasTooltip {
   position: relative;
 	&:hover .tooltipText {
-    visibility: visible;
-    opacity: 1;
+		visibility: visible;
+		opacity: 1;
+	}
+	.tooltipText {
+		pointer-events: none;
+		visibility: hidden;
+		width: 120px;
+		background-color: $selectRed;
+		color: white;
+		text-align: center;
+		border-radius: 5px;
+		padding: 10px;
+		position: absolute;
+		z-index: 1;
+		bottom: 220%;
+		left: 50%;
+		margin-left: -70px;
+		opacity: 0;
+		box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
 	}
 }
 
-.hasTooltip .tooltipText {
-	pointer-events: none;
-	visibility: hidden;
-	width: 120px;
-	background-color: $selectRed;
-	color: white;
-	text-align: center;
-	border-radius: 5px;
-	padding: 10px;
-	position: absolute;
-	z-index: 1;
-	bottom: 220%;
-	left: 50%;
-	margin-left: -70px;
-	opacity: 0;
-	box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-}
-
-
-#loadingIcon {
+.loadingIcon {
 	display: inline-block;
-	visibility: hidden;
-	margin-left: 10px;
 	width: 30px;
 	height: 30px;
-	background-color: black;
 	#blue {
 		fill: $itgBlue;
 	}
@@ -137,27 +133,35 @@ img{
   padding-bottom: 10px;
 }
 
-.button {
-	background-color: $accent;
-	margin: 5px;
-	border: 0;
-	border-radius: 3px;
-	padding: 10px;
-	cursor: pointer;
-	font-size: 12px;
-	color: $text;
-	box-shadow: 0 3px 3px rgba(0,0,0,0.12), 0 3px 3px rgba(0,0,0,0.24);
-	transition: all 0.2s cubic-bezier(.25,.8,.25,1);
-	&:hover {
-		background-color: mix($accent, white, 80%);
-		box-shadow: 0 6px 6px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-	}
-	&:disabled {
-		cursor: initial;
-		background-color: #b3b3b3;
-		color: grey;
-		box-shadow: initial;
-	}
+.vuebutton {
+    display: inline-flex;
+    flex-direction: row;
+    background-color: $accent;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    box-shadow: 0 3px 3px rgba(0,0,0,0.12), 0 3px 3px rgba(0,0,0,0.24);
+    transition: all 0.2s cubic-bezier(.25,.8,.25,1);
+    padding: 5px;
+    &:hover {
+        background-color: mix($accent, white, 90%);
+        box-shadow: 0 6px 6px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    }
+    &.disabled {
+        cursor: initial;
+        background-color: #b3b3b3;
+        color: grey;
+        box-shadow: initial;
+    }
+    p {
+        overflow: hidden;
+        text-overflow: clip;
+        white-space: nowrap;
+        padding: 5px;
+        margin: 0px;
+        font-size: 17px;
+    }
 }
 
 input[type=text], input[type=email], input[type=password] {
@@ -168,6 +172,7 @@ input[type=text], input[type=email], input[type=password] {
 }
 
 .tab {
+	box-sizing: border-box;
 	display: inline-flex;
 	height: 60px;
 	text-decoration: none;
@@ -175,6 +180,7 @@ input[type=text], input[type=email], input[type=password] {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	border-bottom: 5px solid transparent;
 	.material-icons {
 		margin: 0;
 		padding: 0;
@@ -184,13 +190,16 @@ input[type=text], input[type=email], input[type=password] {
 		display: inline-block;
 		font-size: 16px;
 		padding: 20px;
+		color: inherit;
 	}
 	&:hover {
 		cursor: pointer;
-		background-color: mix($accent, white, 80%);
+		color: white;
+		border-color: $accent;
 	}
 	&.selected {
-		background-color: $accent;
+		border-color: $accent;
+		color: white;
 	}
 }
 
@@ -222,34 +231,28 @@ input[type=text], input[type=email], input[type=password] {
 	}
 }
 
-#loginDiv {
-	padding-top: 0;
+#buttonRow {
+	margin-top: 10px;
 }
 
-#loginForm {
-	div {
-		max-height: 50;	
-		transition: max-height 0.3s cubic-bezier(.25, .8, .25, 1);
-		&.hidden {
-			overflow: hidden;
-			display: block;
-			max-height: 0;
-		}
-	}
+#loginDiv {
+	display: flex;
+	flex-direction: column;
 	label{
 		display: block;
 		margin-top: 20px;
 		margin-bottom: 5px;
 	}
-	p.error {
-		margin-top: 10px;
-		color: red;
-	}
+}
+
+.error {
+	margin-top: 10px;
+	color: red;
 }
 
 #userName {
 	color: $text;
-	margin: 10px;
+	margin-right: 10px;
 }
 
 .tables{
@@ -299,8 +302,4 @@ input[type=text], input[type=email], input[type=password] {
 			}
 		}
 	}
-}
-
-.hidden {
-	display: none;
 }

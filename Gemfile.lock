@@ -27,16 +27,16 @@ GEM
       little-plugger (~> 1.1)
       multi_json (~> 1.10)
     memoist (0.16.0)
-    mini-heroku (0.2.2)
+    mini-heroku (0.2.5)
     mini_portile2 (2.3.0)
     multi_json (1.13.1)
     multipart-post (2.0.0)
     mustermann (1.0.2)
-    nokogiri (1.8.2)
+    nokogiri (1.8.4)
       mini_portile2 (~> 2.3.0)
-    nokogiri (1.8.2-x64-mingw32)
+    nokogiri (1.8.4-x64-mingw32)
       mini_portile2 (~> 2.3.0)
-    nokogiri (1.8.2-x86-mingw32)
+    nokogiri (1.8.4-x86-mingw32)
       mini_portile2 (~> 2.3.0)
     nokogumbo (1.5.0)
       nokogiri
@@ -47,7 +47,7 @@ GEM
       rack
     rack-ssl (1.4.1)
       rack
-    sanitize (4.6.5)
+    sanitize (4.6.6)
       crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
       nokogumbo (~> 1.4)
@@ -72,9 +72,9 @@ DEPENDENCIES
   certified (>= 1.0.0)
   firebase (>= 0.2.8)
   jwt (>= 2.1.0)
-  mini-heroku (>= 0.2.2)
+  mini-heroku (>= 0.2.5)
   rack-ssl (>= 1.4.1)
-  sanitize (>= 4.6.5)
+  sanitize (>= 4.6.6)
   sinatra (>= 2.0.3)
 
 RUBY VERSION

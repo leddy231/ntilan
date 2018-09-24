@@ -1,52 +1,146 @@
-<div class="hidden" id="loginDiv">
-	<div class = "centerHorizontal">
-		<a class = "tab selected" id = "loginTab"><p>Login</p></a>
-		<a class = "tab" id = "registerTab"><p>Registrera</p></a>
-	</div>
-	<div class = "centerHorizontal">
-		<form id = "loginForm">
-			<div class = "hidden" id = "registerNameDiv">
-				<label>Namn:</label>
-				<input id = "registerName" type="text" /><br />
+<div id ="vue" class="card">
+	<transitionexpandheight>
+		<div class="centerHorizontal" v-if="!loggedIn || lanData['admin']">
+			<transitionexpandwidth>
+				<span v-if="!loggedIn">
+					<a class="tab" :class="{selected: !registering}" @click="registering = false; loginError = false"><p>Login</p></a>
+					<a class="tab" :class="{selected:  registering}" @click="registering = true; loginError = false"><p>Registrera</p></a>
+				</span>
+			</transitionexpandwidth>
+			<transitionexpandwidth>
+				<span v-if="lanData['admin']">
+					<a class = "tab" :class="{selected: tab == 0}" @click="tab = 0"><p>Platser</p></a>
+					<a class = "tab" :class="{selected: tab == 1}" @click="tab = 1"><p>Användare</p></a>
+					<a class = "tab" :class="{selected: tab == 2}" @click="tab = 2"><p>Inställningar</p></a>
+				</span>
+			</transitionexpandwidth>
+		</div>
+	</transitionexpandheight>
+	<div class="centerHorizontal">
+		<transitionexpandheight>
+			<div id="loginDiv" v-if="!loggedIn">
+				<transitionexpandheight>
+					<div id="registerNameDiv" v-if="registering">
+						<label>Namn:</label>
+						<input type="text" v-model="registerName" v-on:keyup="onNameKey" />
+					</div>
+				</transitionexpandheight>
+				<label>Email:</label>
+				<input type="email" v-model="loginEmail" v-on:keyup="onEmailKey" id="loginEmail"/>
+				<label>Lösenord:</label>
+				<input type="password" v-model="loginPassword" v-on:keyup="onPasswordKey" id="loginPassword"/>
+				<transitionexpandheight>
+					<div v-if="registering">
+						<label>Upprepa lösenord:</label>
+						<input type="password" v-model="registerPasswordConfirm" v-on:keyup="onPassword2Key" id="loginPassword2"/>
+					</div>
+				</transitionexpandheight>
 			</div>
-			<label>Email:</label>
-			<input id = "loginEmail" type="email" /><br />
-			<label>Lösenord:</label>
-			<input id = "loginPassword" type="password" /><br />
-			<div class = "hidden" id = "registerPasswordDiv">
-				<label>Upprepa lösenord:</label>
-				<input id = "registerPassword2" type="password" /><br />
-			</div>
-			<br />
-			<div class = "centerHorizontal"><input class = "button" type="button" id="loginButton" value="Logga in"/></div>
-			<p class = "error" id="loginError"></p>
-		</form>
+		</transitionexpandheight>
 	</div>
-</div>
 
-<div class = "hidden" id = "bookingDiv">
-	<h1>Platsbokning</h1>
-	<div class = "centerHorizontal">
-		<p id = "userName"> </p>
-		<input class = "button" type="button" id ="logoutButton" value="Logga ut"/>
-		<input class = "button" type="button" id = "saveTable" value="Spara" disabled/>
-		<input class = "button" type="button" id = "cancelTable" value="Avboka" disabled/>
-		<%= erb :spinner %>
+	<div class="centerHorizontal" id="buttonRow">
+		<transitionexpandwidth>
+			<p id="userName" v-if="lanData">{{lanData.name}} </p>
+		</transitionexpandwidth>
+		<vuebutton @click="loginButton" :loading="isLogginIn" :text="loggedIn ? 'Logga ut' : registering ? 'Registrera' : 'Logga in'"></vuebutton>
+		<transitionexpandwidth>
+			<vuebutton v-if="loggedIn" @click="save()" :disabled="!selectedSeat || selectedSeat == bookedSeat" :text="bookedSeat ? 'Flytta' : 'Boka'" :loading="isSaving"></vuebutton>
+		</transitionexpandwidth>
+		<transitionexpandwidth>
+			<vuebutton v-if="loggedIn" @click="cancel()" :text="'Avboka'" :disabled="!bookedSeat" :loading="isCanceling"></vuebutton>
+		</transitionexpandwidth>
 	</div>
 	
-	<div class = "tables centerHorizontal">
-		<div id = "tablesHere">
+	<div class="centerHorizontal">
+		<transition name="expand">
+			<p class="error" v-if="loginError">{{loginError}}</p>
+		</transition>
+	</div>
+	
+	<transitionexpandheight>
+	<div v-if="loggedIn">
+		<div class="centerHorizontal">
+			<div v-if="lanData && tab == 0">
+				<div class="tables" v-if="lanData['open']">
+					<div class="section" v-for="section in lanData.sections">
+						<ul class="row" v-for="row in section.rows">
+							<li v-for="seat in row.seats">
+								<span class="hasTooltip" v-if="seat.occupant && bookedSeat != seat.id">
+									<a class="taken">
+										{{seat.number}}
+									</a>
+									<span v-if="seat.occupant" class="tooltipText">{{seat.occupant}}</span>
+								</span>
+								<span v-else>
+									<a @click="selectedSeat = seat.id" :class="{selected: selectedSeat == seat.id, booked: bookedSeat == seat.id}">
+										{{seat.number}}
+									</a>
+								</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="centerHorizontal" v-if="!lanData['open']">
+					<h1>
+						Platsbokningen inte öppen än
+					</h1>
+				</div>
+			</div>
+
+			<div id = "usersDiv" v-if="tab == 1">
+				<% users = $firebase.get("users").body.to_a.sort!{|a, b| a[1]["name"].downcase <=> b[1]["name"].downcase} %>
+				<table class = "adminTable">
+					<tr>
+						<th>Namn</th>
+						<th>Email</th>
+						<th>Sittplats</th>
+						<th></th>
+					</tr>
+					<% for user in users do %>
+						<% id = user[0] %>
+						<% user = user[1] %>
+						<% table = user["tables"] %>
+						<% table = table ? table["#{$active}"] : nil %>
+						<tr>
+							<td><%= user["name"] %></td>
+							<td><%= user["email"] %></td>
+							<td><%= table %></td>
+							<td>
+								<% if table %>
+								<input class = "button" type="button" value="Avboka" onclick='adminCancel("<%= id %>");'/>
+								<% end %>
+							</td>
+						</tr>
+					<% end %>
+				</table>
+			</div>
+
+			<div id = "settingsDiv" v-if="tab == 2">
+				<h1>Settings</h1>
+				<select>
+					<% for option in $firebase.get("lans").body%>
+						<option><%= option[0] %></option>
+					<% end %>
+				</select>
+			</div>
 		</div>
 	</div>
+	</transitionexpandheight>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+<script src="transitionexpandheight.js"></script>
+<script src="transitionexpandwidth.js"></script>
+<script src="vuebutton.js"></script>
 <script src="booking.js"></script>
 
 <div class = "card">
 	<p>
 		En bordsplats är 80x70cm.<br />
 		Användare och data hanteras säkert av <a target="_blank" href="https://firebase.google.com/">Google Firebase.</a><br />
-		Inga lösenord skickas till servern, <br /> och de kan inte på något sätt kommas åt av någon på ITG.
+		Inga lösenord skickas till servern, <br /> och de kan inte på något sätt kommas åt av någon på NTI.
 	</p>
 </div>

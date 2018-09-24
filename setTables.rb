@@ -26,8 +26,14 @@
 
 require "json"
 require "firebase"
-base_uri = "https://itg-lan-dev.firebaseio.com/"
-$firebase = Firebase::Client.new(base_uri, File.read(File.dirname(__FILE__) + "/firebase-admin.json"))
+require "mini-heroku"
+
+MH.loadEnvironment
+$firebase_web_config = MH.env("firebase_web_config")
+$firebase_server_config = MH.env("firebase_server_admin_config")
+$firebase = Firebase::Client.new($firebase_web_config["databaseURL"], $firebase_server_config.to_json)
+$active = $firebase.get("active").body
+
 tablesPerRow = 8
 rowsPerSection = 2
 sections = 4
@@ -46,5 +52,5 @@ sections.times do |s|
 	j["sec#{s}"] = sec
 end
 #puts j.inspect
-$firebase.set("lans/vor2018/sections", j)
-puts  $firebase.get("lans/vor2018/sections").body
+$firebase.set("lans/host2018/sections", j)
+puts  $firebase.get("lans/host2018/sections").body

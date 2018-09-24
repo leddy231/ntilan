@@ -85,24 +85,21 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
-#loadingIcon {
+.loadingIcon {
   display: inline-block;
-  visibility: hidden;
-  margin-left: 10px;
   width: 30px;
   height: 30px;
-  background-color: black;
 }
 
-#loadingIcon #blue {
+.loadingIcon #blue {
   fill: #009cdc;
 }
 
-#loadingIcon #orange {
+.loadingIcon #orange {
   fill: #f18f20;
 }
 
-#loadingIcon #pink {
+.loadingIcon #pink {
   fill: #ec0089;
 }
 
@@ -134,29 +131,38 @@ img {
   padding-bottom: 10px;
 }
 
-.button {
+.vuebutton {
+  display: inline-flex;
+  flex-direction: row;
   background-color: #4b0082;
   margin: 5px;
-  border: 0;
-  border-radius: 3px;
-  padding: 10px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 12px;
   color: white;
   box-shadow: 0 3px 3px rgba(0, 0, 0, 0.12), 0 3px 3px rgba(0, 0, 0, 0.24);
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: 5px;
 }
 
-.button:hover {
-  background-color: #6f339b;
+.vuebutton:hover {
+  background-color: #5d1a8f;
   box-shadow: 0 6px 6px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
-.button:disabled {
+.vuebutton.disabled {
   cursor: initial;
   background-color: #b3b3b3;
   color: grey;
   box-shadow: initial;
+}
+
+.vuebutton p {
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  padding: 5px;
+  margin: 0px;
+  font-size: 17px;
 }
 
 input[type=text], input[type=email], input[type=password] {
@@ -167,6 +173,7 @@ input[type=text], input[type=email], input[type=password] {
 }
 
 .tab {
+  box-sizing: border-box;
   display: inline-flex;
   height: 60px;
   text-decoration: none;
@@ -174,6 +181,7 @@ input[type=text], input[type=email], input[type=password] {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  border-bottom: 5px solid transparent;
 }
 
 .tab .material-icons {
@@ -186,15 +194,18 @@ input[type=text], input[type=email], input[type=password] {
   display: inline-block;
   font-size: 16px;
   padding: 20px;
+  color: inherit;
 }
 
 .tab:hover {
   cursor: pointer;
-  background-color: #6f339b;
+  color: white;
+  border-color: #4b0082;
 }
 
 .tab.selected {
-  background-color: #4b0082;
+  border-color: #4b0082;
+  color: white;
 }
 
 #main {
@@ -223,35 +234,29 @@ input[type=text], input[type=email], input[type=password] {
   margin-bottom: 20px;
 }
 
+#buttonRow {
+  margin-top: 10px;
+}
+
 #loginDiv {
-  padding-top: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-#loginForm div {
-  max-height: 50;
-  transition: max-height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-#loginForm div.hidden {
-  overflow: hidden;
-  display: block;
-  max-height: 0;
-}
-
-#loginForm label {
+#loginDiv label {
   display: block;
   margin-top: 20px;
   margin-bottom: 5px;
 }
 
-#loginForm p.error {
+.error {
   margin-top: 10px;
   color: red;
 }
 
 #userName {
   color: white;
-  margin: 10px;
+  margin-right: 10px;
 }
 
 .tables .section {
@@ -304,8 +309,4 @@ input[type=text], input[type=email], input[type=password] {
 
 .tables ul li a.taken:hover {
   background-color: #913333;
-}
-
-.hidden {
-  display: none;
 }

@@ -2,13 +2,9 @@
   "devUsesProdEnviromnent": true,
   "mhVersion": "0.2.1",
   "environmentKeys": [
-    "fire_base_url",
-    "fire_project_id",
-    "fire_private_key_id",
-    "fire_private_key",
-    "fire_client_email",
-    "fire_client_id",
-    "fire_client_x509_cert_url"
+    "firebase_url",
+    "firebase_web_config",
+    "firebase_server_admin_config"
   ],
   "customGems": {
     "rack/ssl": "rack-ssl",

@@ -5,29 +5,15 @@ require "sanitize"
 require 'sinatra'
 require "mini-heroku"
 
-firebase = {
-	"type": "service_account",
-	"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-	"token_uri": "https://accounts.google.com/o/oauth2/token",
-	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-	"project_id": MH.env("fire_project_id"),
-	"private_key_id": MH.env("fire_private_key_id"),
-	"private_key": MH.env("fire_private_key").gsub("_n_", "\n").gsub("_s_", " "),
-	"client_email": MH.env("fire_client_email"),
-	"client_id": MH.env("fire_client_id"),
-	"client_x509_cert_url": MH.env("fire_client_x509_cert_url")
-}
-
-$firebase = Firebase::Client.new(MH.env("fire_base_url"), firebase.to_json)
-$verifier = FirebaseIDTokenVerifier.new(MH.env("fire_project_id"))
+$firebase_web_config = MH.env("firebase_web_config")
+$firebase_server_config = MH.env("firebase_server_admin_config")
+$firebase = Firebase::Client.new($firebase_web_config["databaseURL"], $firebase_server_config.to_json)
+$verifier = FirebaseIDTokenVerifier.new($firebase_web_config["projectId"])
 $active = $firebase.get("active").body
 $adminUID = $firebase.get("admin").body
 
 if Sinatra::Application.environment == :development
 	use Rack::Logger
-	get '/exit' do
-		Process.kill('TERM', Process.pid)
-	end
 else
 	require 'rack/ssl'
 	use Rack::SSL
@@ -39,23 +25,23 @@ helpers do
   end
 end
 
-def isAdmin(token)
-	token = verifyUser(token)
-	if token
-		return token["user_id"] == $adminUID
-	end
-	return false
-end
-
-def verifyUser(token)
+def decodeToken(token)
+	decoded = false
 	begin
 		key = FirebaseIDTokenVerifier.retrieve_and_cache_jwt_valid_public_keys[0]
 		decoded = $verifier.decode(token, key)
-		return decoded[0]
+		decoded = decoded[0]
 	rescue Exception => e
 		logger.info(e)
 		return false
 	end
+	admin = false
+	id = ""
+	if decoded
+		id = decoded["user_id"]
+		admin = (id == $adminUID)
+	end
+	return {success: decoded, id: id, admin: admin}
 end
 
 def cancel(id)
@@ -70,64 +56,109 @@ def cancel(id)
 	end
 end
 
+def getTables(lan, users)
+	sections = []
+	lan["sections"].each do |secName, section|
+		newSection = {name: secName, rows: [] }
+		section.each do |rowName, row|
+			newRow = {name: rowName, seats: [] }
+			if row.is_a? Array
+				row = Hash[(0...row.size).zip row]
+			end
+			row.each do |number, occupant|
+				next if number == 0
+				if occupant
+					occupant = users[occupant]["name"].capitalize
+				else
+					occupant = false
+				end
+				newSeat = {number: number, occupant: occupant, id: secName + "-" + rowName + "-" +number.to_s}
+				newRow[:seats] << newSeat
+			end
+			newSection[:rows] << newRow
+		end
+		sections << newSection
+	end
+	return sections
+end
+
+def getData(token)
+	lan = $firebase.get("lans/#{$active}/").body
+	users = $firebase.get("users").body
+	sections = {}
+	if lan["open"]
+		sections = getTables(lan, users)
+	end
+	user = users[token[:id]]
+	return {sections: sections, name: user["name"], seat: user.dig("tables", $active), admin: token[:admin], open: lan["open"]}.to_json
+end
+
 post '*' do
 	request.body.rewind
 	@body = JSON.parse(Sanitize.fragment(request.body.read))
 	pass
 end
 
-get "/" do
-	redirect to("/index")
-end
-
 post "/rename" do
 	name = @body["name"]
 	email = @body["email"]
-	user = verifyUser(@body["token"])
-	if user
-		id = user["user_id"]
-		$firebase.update("users/#{id}/", {"name" => name, "email" => email})
+	token = decodeToken(@body["token"])
+	if token[:success]
+		$firebase.update("users/#{token[:id]}/", {"name" => name, "email" => email})
 	end
 end
 
 post "/cancel" do
-	token = @body["token"]
-	if @body["adminForced"]
-		if (isAdmin(token))
-			cancel(@body["id"])
-		end
-	else
-		user = verifyUser(token)
-		if user
-			id = user["user_id"]
-			cancel(id)
+	token = decodeToken(@body["token"])
+	data = {}
+	if token[:success]
+		if @body["adminForced"]
+			if (token[:admin])
+				cancel(@body["id"])
+			end
+		else
+			cancel(token[:id])
+			data = getData(token)
 		end
 	end
+	data
 end
 
 post "/book" do
 	table = @body["table"]
-	user = verifyUser(@body["token"])
-	if user
-		id = user["user_id"]
+	token = decodeToken(@body["token"])
+	data = {}
+	if token[:success]
 		section, row, seat = table.split("-")
 		isUsed = $firebase.get("lans/#{$active}/sections/#{section}/#{row}/#{seat}").body
 		if !isUsed
-			cancel(id)
-			$firebase.update("users/#{id}/tables/", {$active => table})
-			$firebase.set("lans/#{$active}/sections/#{section}/#{row}/#{seat}", id)
+			cancel(token[:id])
+			$firebase.update("users/#{token[:id]}/tables/", {$active => table})
+			$firebase.set("lans/#{$active}/sections/#{section}/#{row}/#{seat}", token[:id])
 		end
+		data = getData(token)
 	end
+	data
 end
 
-get "/tables/*" do
+get "/landata/*" do
 	token = params[:splat][0]
-	@active = $active
-	if isAdmin(token)
-		erb :adminTables, :layout => false
-	else
-		erb :tables, :layout => false
+	data = ""
+	token = decodeToken(token)
+	logger.info(token)
+	if token[:success]
+		data = getData(token)
 	end
+	data
+end
+
+get "/booking.js" do
+	content_type 'text/javascript'
+	ERB.new(File.read("./booking.js")).result
+end
+
+get "/" do
+	redirect to("/index")
 end
 
 get "/index" do
@@ -150,38 +181,3 @@ not_found do
   status 404
   "Ya broke it"
 end
-
-# post "/admin" do
-# 	#send(params[:time])
-# end
-#
-# get "/admin/*" do
-# 	token = params['splat'][0]
-# 	ip = request.ip
-# 	if !Tokens.any?{|tok| tok[0] == token && tok[1] == ip}
-# 		redirect to("/index")
-# 		break
-# 	end
-#
-# 	html = ''
-# 	content = ''
-# 	File.open(File.dirname(__FILE__) + "/index.html", "rb") do |file|
-# 		html = file.read
-# 	end
-# 	File.open(File.dirname(__FILE__) + "/sites/adminaccess.html", "rb") do |file|
-# 		content = file.read
-# 	end
-# 	html.gsub!("CONTENT", content)
-# 	html
-# end
-#
-# post "/adminpass" do
-# 	pass = params["password"]
-# 	if pass == AdminPass
-# 		token = (0...50).map{('a'..'z').to_a.sample}.join
-# 		Tokens << [token, request.ip]
-# 		redirect to("/admin/#{token}")
-# 	else
-# 		redirect to("/index")
-# 	end
-# end
