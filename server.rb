@@ -25,6 +25,12 @@ helpers do
   end
 end
 
+before do
+	cache_control :public, :must_revalidate, :max_age => 60 * 5
+end
+
+set :static_cache_control, :max_age => 60 * 5
+
 def decodeToken(token)
 	decoded = false
 	begin
@@ -90,7 +96,25 @@ def getData(token)
 		sections = getTables(lan, users)
 	end
 	user = users[token[:id]]
-	return {sections: sections, name: user["name"], seat: user.dig("tables", $active), admin: token[:admin], open: lan["open"]}.to_json
+	data = {sections: sections, name: user["name"], seat: user.dig("tables", $active), admin: token[:admin], open: lan["open"]}
+	if token[:admin]
+		data[:users] = getUsers
+	end
+	return data.to_json
+end
+
+def getUsers
+	users = $firebase.get("users").body.to_a
+	users.map! do |a|
+		name = a[1]['name']
+		id = a[0]
+		email = a[1]['email']
+		seat = a[1].dig("tables", $active)
+		seat = seat ? seat : false
+		{name: name, id: id, email: email, seat: seat}
+	end
+	users.sort!{|a, b| a[:name].downcase <=> b[:name].downcase}
+	return users
 end
 
 post '*' do
@@ -118,8 +142,8 @@ post "/cancel" do
 			end
 		else
 			cancel(token[:id])
-			data = getData(token)
 		end
+		data = getData(token)
 	end
 	data
 end

@@ -36,10 +36,13 @@ const VUEApp = new Vue({
 		loginPassword: "",
 		registerName: "",
 		registerPasswordConfirm: "",
-		lanData: {},
+		lanData: false,
 		bookedSeat: false,
 		selectedSeat: false,
 		tab: 0,
+		adminShowOnlyBookedUsers: true,
+		adminSelectedUser: false,
+		adminIsCanceling: false,
 	},
 	methods: {
 		clearFields: () => {
@@ -49,7 +52,8 @@ const VUEApp = new Vue({
 			VUEApp.registerPasswordConfirm = ""
 			VUEApp.registering = false
 			VUEApp.loginError = ""
-			VUEApp.lanData = {}
+			VUEApp.lanData = false
+			VUEApp.tab = 0
 		},
 		onNameKey: (event) => {
 			if (event.keyCode === 13) {
@@ -183,6 +187,22 @@ const VUEApp = new Vue({
 				});
 			}).catch(function(error) {
 				VUEApp.isCanceling = false;
+				var errorMessage = error.message;
+				var errorCode = error.code;
+				console.log(errorCode);
+				console.log(errorMessage);
+			});
+		},
+		adminCancel: () => {
+			VUEApp.adminIsCanceling = true;
+			firebase.auth().currentUser.getIdToken(true).then((idToken) => {
+				var data = JSON.stringify({"token": idToken, "adminForced" : true, "id": VUEApp.adminSelectedUser['id']});
+				httpPostAsync("/cancel", "text/JSON", data, (newData) =>{
+					VUEApp.loadData(newData)
+					VUEApp.adminIsCanceling = false;
+				});
+			}).catch(function(error) {
+				VUEApp.adminIsCanceling = false;
 				var errorMessage = error.message;
 				var errorCode = error.code;
 				console.log(errorCode);

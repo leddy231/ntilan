@@ -39,29 +39,31 @@
 		</transitionexpandheight>
 	</div>
 
-	<div class="centerHorizontal" id="buttonRow">
-		<transitionexpandwidth>
-			<p id="userName" v-if="lanData">{{lanData.name}} </p>
-		</transitionexpandwidth>
-		<vuebutton @click="loginButton" :loading="isLogginIn" :text="loggedIn ? 'Logga ut' : registering ? 'Registrera' : 'Logga in'"></vuebutton>
-		<transitionexpandwidth>
-			<vuebutton v-if="loggedIn" @click="save()" :disabled="!selectedSeat || selectedSeat == bookedSeat" :text="bookedSeat ? 'Flytta' : 'Boka'" :loading="isSaving"></vuebutton>
-		</transitionexpandwidth>
-		<transitionexpandwidth>
-			<vuebutton v-if="loggedIn" @click="cancel()" :text="'Avboka'" :disabled="!bookedSeat" :loading="isCanceling"></vuebutton>
-		</transitionexpandwidth>
-	</div>
-	
-	<div class="centerHorizontal">
-		<transition name="expand">
-			<p class="error" v-if="loginError">{{loginError}}</p>
-		</transition>
-	</div>
-	
-	<transitionexpandheight>
-	<div v-if="loggedIn">
+
+
+	<div class="centerHorinzontal">
+		<transitionexpandheight>
+		<div class="centerHorizontal" id="buttonRow" v-if="tab == 0">
+			<transitionexpandwidth>
+				<p id="userName" v-if="lanData">{{lanData.name}} </p>
+			</transitionexpandwidth>
+			<vuebutton @click="loginButton" :loading="isLogginIn" :text="loggedIn ? 'Logga ut' : registering ? 'Registrera' : 'Logga in'"></vuebutton>
+			<transitionexpandwidth>
+				<vuebutton v-if="loggedIn" @click="save()" :disabled="!selectedSeat || selectedSeat == bookedSeat" :text="bookedSeat ? 'Flytta' : 'Boka'" :loading="isSaving"></vuebutton>
+			</transitionexpandwidth>
+			<transitionexpandwidth>
+				<vuebutton v-if="loggedIn" @click="cancel()" :text="'Avboka'" :disabled="!bookedSeat" :loading="isCanceling"></vuebutton>
+			</transitionexpandwidth>
+		</div>
+		</transitionexpandheight>
+
 		<div class="centerHorizontal">
-			<div v-if="lanData && tab == 0">
+			<transitionexpandheight>
+				<p class="error" v-if="tab == 0 && loginError">{{loginError}}</p>
+			</transitionexpandheight>
+		</div>
+		<transitionexpandheight>
+			<div v-if="tab == 0 && lanData" class="centerHorizontal">
 				<div class="tables" v-if="lanData['open']">
 					<div class="section" v-for="section in lanData.sections">
 						<ul class="row" v-for="row in section.rows">
@@ -88,36 +90,32 @@
 					</h1>
 				</div>
 			</div>
-
-			<div id = "usersDiv" v-if="tab == 1">
-				<% users = $firebase.get("users").body.to_a.sort!{|a, b| a[1]["name"].downcase <=> b[1]["name"].downcase} %>
+		</transitionexpandheight>
+		<transitionexpandheight>
+			<div v-if="tab == 1">
+				<label class="material-checkbox">
+					<input type="checkbox" v-model="adminShowOnlyBookedUsers">
+					<span>Visa bara bokade användare</span>
+				</label>
+				<div class = "centerHorizontal">
+					<vuebutton @click="adminCancel()" :text="'Avboka'" :disabled="!adminSelectedUser || !adminSelectedUser['seat']" :loading="adminIsCanceling"></vuebutton>
+				</div>
 				<table class = "adminTable">
 					<tr>
 						<th>Namn</th>
 						<th>Email</th>
 						<th>Sittplats</th>
-						<th></th>
 					</tr>
-					<% for user in users do %>
-						<% id = user[0] %>
-						<% user = user[1] %>
-						<% table = user["tables"] %>
-						<% table = table ? table["#{$active}"] : nil %>
-						<tr>
-							<td><%= user["name"] %></td>
-							<td><%= user["email"] %></td>
-							<td><%= table %></td>
-							<td>
-								<% if table %>
-								<input class = "button" type="button" value="Avboka" onclick='adminCancel("<%= id %>");'/>
-								<% end %>
-							</td>
-						</tr>
-					<% end %>
+					<tr v-for="user in lanData['users']" v-if="!adminShowOnlyBookedUsers || user['seat']" @click="adminSelectedUser = user" :class="{selected: adminSelectedUser['id'] == user['id']}">
+						<td>{{user['name']}}</td>
+						<td>{{user['email']}}</td>
+						<td>{{user['seat']}}</td>
+					</tr>
 				</table>
 			</div>
-
-			<div id = "settingsDiv" v-if="tab == 2">
+		</transitionexpandheight>
+		<transitionexpandheight>
+			<div v-if="tab == 2">
 				<h1>Settings</h1>
 				<select>
 					<% for option in $firebase.get("lans").body%>
@@ -125,9 +123,10 @@
 					<% end %>
 				</select>
 			</div>
-		</div>
+		</transitionexpandheight>
 	</div>
-	</transitionexpandheight>
+	
+
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
