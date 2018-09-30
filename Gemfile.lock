@@ -11,6 +11,11 @@ GEM
       googleauth
       httpclient (>= 2.5.3)
       json
+    firebase_id_token (2.3.0)
+      httparty (~> 0.16, >= 0.16.2)
+      jwt (~> 2.1, >= 2.1.0)
+      redis (~> 4.0, >= 4.0.1)
+      redis-namespace (~> 1.6, >= 1.6.0)
     googleauth (0.6.2)
       faraday (~> 0.12)
       jwt (>= 1.4, < 3.0)
@@ -19,6 +24,8 @@ GEM
       multi_json (~> 1.11)
       os (~> 0.9)
       signet (~> 0.7)
+    httparty (0.16.2)
+      multi_xml (>= 0.5.2)
     httpclient (2.8.3)
     json (2.1.0)
     jwt (2.1.0)
@@ -30,6 +37,7 @@ GEM
     mini-heroku (0.2.6)
     mini_portile2 (2.3.0)
     multi_json (1.13.1)
+    multi_xml (0.6.0)
     multipart-post (2.0.0)
     mustermann (1.0.2)
     nokogiri (1.8.4)
@@ -47,6 +55,9 @@ GEM
       rack
     rack-ssl (1.4.1)
       rack
+    redis (4.0.2)
+    redis-namespace (1.6.0)
+      redis (>= 3.0.4)
     sanitize (4.6.6)
       crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
@@ -71,14 +82,14 @@ PLATFORMS
 DEPENDENCIES
   certified (>= 1.0.0)
   firebase (>= 0.2.8)
-  jwt (>= 2.1.0)
+  firebase_id_token (>= 2.3.0)
   mini-heroku (>= 0.2.6)
   rack-ssl (>= 1.4.1)
-  sanitize (>= 4.6.5)
+  sanitize (>= 4.6.6)
   sinatra (>= 2.0.3)
 
 RUBY VERSION
-   ruby 2.4.3p205
+   ruby 2.4.4p296
 
 BUNDLED WITH
    1.16.3

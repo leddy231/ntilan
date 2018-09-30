@@ -43,18 +43,9 @@ const VUEApp = new Vue({
 		adminShowOnlyBookedUsers: true,
 		adminSelectedUser: false,
 		adminIsCanceling: false,
+		newUser: false,
 	},
 	methods: {
-		clearFields: () => {
-			VUEApp.loginEmail = ""
-			VUEApp.loginPassword = ""
-			VUEApp.registerName = ""
-			VUEApp.registerPasswordConfirm = ""
-			VUEApp.registering = false
-			VUEApp.loginError = ""
-			VUEApp.lanData = false
-			VUEApp.tab = 0
-		},
 		onNameKey: (event) => {
 			if (event.keyCode === 13) {
 				document.getElementById("loginEmail").focus();
@@ -125,9 +116,9 @@ const VUEApp = new Vue({
 				var user = firebase.auth().currentUser;
 				user.getIdToken(true).then(function(token) {
 					var data = JSON.stringify({"token": token, "name": name, "email": email});
-					httpPostAsync("/rename", "text/JSON", data, false);
-					VUEApp.isLogginIn = false;
-					VUEApp.userName = name;
+					httpPostAsync("/rename", "text/JSON", data, (newData) => {
+						VUEApp.loadData(newData)
+					});
 				});
 			}).catch(function(error) {
 				VUEApp.isLogginIn = false;
@@ -148,9 +139,8 @@ const VUEApp = new Vue({
 			VUEApp.userName = name;
 		},
 		logout: () => {
+			VUEApp.loadData("false")
 			firebase.auth().signOut();
-			VUEApp.clearFields();
-			VUEApp.isLogginIn = false;
 		},
 		login: () => {
 			firebase.auth().signInWithEmailAndPassword(VUEApp.loginEmail, VUEApp.loginPassword).catch(function(error) {
@@ -225,22 +215,29 @@ const VUEApp = new Vue({
 			});
 		},
 		loadData: (data) => {
+			VUEApp.loggedIn = true
+			VUEApp.isLogginIn = false
+			VUEApp.isSaving = false
+			VUEApp.isCanceling = false
+			VUEApp.registering = false
+			VUEApp.loginError = false
+			VUEApp.loginEmail = ""
+			VUEApp.loginPassword = ""
+			VUEApp.registerName = ""
+			VUEApp.registerPasswordConfirm = ""
 			VUEApp.lanData = JSON.parse(data)
 			VUEApp.bookedSeat = VUEApp.lanData.seat
-			VUEApp.loggedIn = true
-			VUEApp.selectedSeat = false;
-			VUEApp.isLogginIn = false;
-			VUEApp.isSaving = false;
-			VUEApp.isCanceling = false;
-
+			VUEApp.selectedSeat = false
+			VUEApp.adminSelectedUser = false,
+			VUEApp.adminIsCanceling = false,
+			VUEApp.newUser = false
 		}
 	},
 	mounted: () => {
 		firebase.initializeApp(config);
 		firebase.auth().onAuthStateChanged(function(user) {
-			if (user) {
+			if (user && !VUEApp.newUser) {
 				VUEApp.isLogginIn = true;
-				VUEApp.clearFields();
 				user.getIdToken(true).then((idToken) => {
 					httpGetAsync("/landata/" + idToken, function(data){
 						VUEApp.loadData(data);

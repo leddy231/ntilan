@@ -5,12 +5,21 @@ require "sanitize"
 require 'sinatra'
 require "mini-heroku"
 
+def firebaseInstance(path)
+    data = $firebase.get(path).body
+    yield data
+    $firebase.set(path, data)
+end
+
 $firebase_web_config = MH.env("firebase_web_config")
 $firebase_server_config = MH.env("firebase_server_admin_config")
 $firebase = Firebase::Client.new($firebase_web_config["databaseURL"], $firebase_server_config.to_json)
 $verifier = FirebaseIDTokenVerifier.new($firebase_web_config["projectId"])
-$active = $firebase.get("active").body
-$adminUID = $firebase.get("admin").body
+firebaseInstance("") do |firebase|
+	$active = firebase["active"]
+	$adminUID = firebase["admin"]
+end
+
 
 if Sinatra::Application.environment == :development
 	use Rack::Logger
@@ -39,7 +48,7 @@ def decodeToken(token)
 		decoded = decoded[0]
 	rescue Exception => e
 		logger.info(e)
-		return false
+		return {success: false, id: "", admin: false}
 	end
 	admin = false
 	id = ""
@@ -50,15 +59,15 @@ def decodeToken(token)
 	return {success: decoded, id: id, admin: admin}
 end
 
-def cancel(id)
-	table = $firebase.get("users/#{id}/tables/#{$active}").body
+def cancel(id, firebase)
+	table = firebase.dig("users", id, "tables", $active)
 	if table
 		section, row, seat = table.split("-")
-		oldTableBooked = $firebase.get("lans/#{$active}/sections/#{section}/#{row}/#{seat}").body
+		oldTableBooked = firebase.dig("lans", $active, "sections", section, row, seat)
 		if oldTableBooked && oldTableBooked == id
-			$firebase.update("lans/#{$active}/sections/#{section}/#{row}", {"#{seat}" => false})
+			firebase.dig("lans", $active, "sections", section, row)[seat] = false
 		end
-		$firebase.update("users/#{id}/tables/", {$active => false})
+		firebase.dig("users", id, "tables")[$active] = false
 	end
 end
 
@@ -72,7 +81,7 @@ def getTables(lan, users)
 				row = Hash[(0...row.size).zip row]
 			end
 			row.each do |number, occupant|
-				next if number == 0
+				next if number == 0 or number == "arrayfix"
 				if occupant
 					occupant = users[occupant]["name"].capitalize
 				else
@@ -88,23 +97,27 @@ def getTables(lan, users)
 	return sections
 end
 
-def getData(token)
-	lan = $firebase.get("lans/#{$active}/").body
-	users = $firebase.get("users").body
+def getData(token, firebase)
+	lan = firebase.dig("lans", $active)
+	users = firebase["users"]
 	sections = {}
 	if lan["open"]
 		sections = getTables(lan, users)
 	end
 	user = users[token[:id]]
-	data = {sections: sections, name: user["name"], seat: user.dig("tables", $active), admin: token[:admin], open: lan["open"]}
+	data = {sections: sections, 
+			name: user["name"], 
+			seat: user.dig("tables", $active), 
+			admin: token[:admin], 
+			open: lan["open"]}
 	if token[:admin]
-		data[:users] = getUsers
+		data[:users] = getUsers(firebase)
 	end
 	return data.to_json
 end
 
-def getUsers
-	users = $firebase.get("users").body.to_a
+def getUsers(firebase)
+	users = firebase["users"].dup.to_a
 	users.map! do |a|
 		name = a[1]['name']
 		id = a[0]
@@ -127,23 +140,34 @@ post "/rename" do
 	name = @body["name"]
 	email = @body["email"]
 	token = decodeToken(@body["token"])
+	data = {}
 	if token[:success]
-		$firebase.update("users/#{token[:id]}/", {"name" => name, "email" => email})
+		firebaseInstance("") do |firebase|
+			user = firebase["users"][token[:id]] = {
+				"name" => name,
+				"email" => email,
+				"tables" => {$active => false}
+			}
+			data = getData(token, firebase)
+		end
 	end
+	data
 end
 
 post "/cancel" do
 	token = decodeToken(@body["token"])
 	data = {}
 	if token[:success]
-		if @body["adminForced"]
-			if (token[:admin])
-				cancel(@body["id"])
+		firebaseInstance ("") do |firebase|
+			if @body["adminForced"]
+				if (token[:admin])
+					cancel(@body["id"], firebase)
+				end
+			else
+				cancel(token[:id], firebase)
 			end
-		else
-			cancel(token[:id])
+			data = getData(token, firebase)
 		end
-		data = getData(token)
 	end
 	data
 end
@@ -154,13 +178,15 @@ post "/book" do
 	data = {}
 	if token[:success]
 		section, row, seat = table.split("-")
-		isUsed = $firebase.get("lans/#{$active}/sections/#{section}/#{row}/#{seat}").body
-		if !isUsed
-			cancel(token[:id])
-			$firebase.update("users/#{token[:id]}/tables/", {$active => table})
-			$firebase.set("lans/#{$active}/sections/#{section}/#{row}/#{seat}", token[:id])
+		firebaseInstance("") do |firebase|
+			isUsed = firebase.dig("lans", $active, "sections", section, row, seat)
+			if !isUsed
+				cancel(token[:id], firebase)
+				firebase.dig("users", token[:id], "tables")[$active] = table
+				firebase.dig("lans", $active, "sections", section, row)[seat] = token[:id]
+			end
+			data = getData(token, firebase)
 		end
-		data = getData(token)
 	end
 	data
 end
@@ -171,7 +197,9 @@ get "/landata/*" do
 	token = decodeToken(token)
 	logger.info(token)
 	if token[:success]
-		data = getData(token)
+		firebaseInstance ("") do |firebase|
+			data = getData(token, firebase)
+		end
 	end
 	data
 end
