@@ -1,5 +1,6 @@
 require 'firebase'
 require "./verifier"
+require "rubyXL"
 require "certified"
 require "sanitize"
 require 'sinatra'
@@ -73,6 +74,7 @@ end
 
 def getTables(lan, users)
 	sections = []
+	booked = 0
 	lan["sections"].each do |secName, section|
 		newSection = {name: secName, rows: [] }
 		section.each do |rowName, row|
@@ -84,6 +86,7 @@ def getTables(lan, users)
 				next if number == 0 or number == "arrayfix"
 				if occupant
 					occupant = users[occupant]["name"].capitalize
+					booked += 1
 				else
 					occupant = false
 				end
@@ -94,7 +97,7 @@ def getTables(lan, users)
 		end
 		sections << newSection
 	end
-	return sections
+	return sections, booked
 end
 
 def getData(token, firebase)
@@ -102,14 +105,16 @@ def getData(token, firebase)
 	users = firebase["users"]
 	sections = {}
 	if lan["open"]
-		sections = getTables(lan, users)
+		sections, booked = getTables(lan, users)
 	end
 	user = users[token[:id]]
 	data = {sections: sections, 
 			name: user["name"], 
 			seat: user.dig("tables", $active), 
 			admin: token[:admin], 
-			open: lan["open"]}
+			open: lan["open"],
+			booked: booked
+		}
 	if token[:admin]
 		data[:users] = getUsers(firebase)
 	end
@@ -189,6 +194,32 @@ post "/book" do
 		end
 	end
 	data
+end
+
+get "/lanexcel/*" do
+	if decodeToken(params[:splat][0])[:success]
+		book = RubyXL::Workbook.new
+		sheet = book[0]
+		users = $firebase.get("users").body
+		sheet.add_cell(0, 0, "Namn")
+		sheet.add_cell(0, 1, "Plats")
+		sheet.add_cell(0, 2, "ID")
+		sheet.change_column_width(0, 30)
+		x = 1
+		users.each do |token, user|
+			if user["tables"]
+				if user["tables"][$active]
+					*, seat = user["tables"][$active].split("-")
+					sheet.add_cell(x, 0, user["name"])
+					sheet.add_cell(x, 1, seat.to_i)
+					sheet.add_cell(x, 2, token)
+					x += 1
+				end
+			end
+		end
+		book.write("./lanLista.xlsx")
+		send_file "lanLista.xlsx", :filename => "LanLista_#{$active}.xlsx"
+	end
 end
 
 get "/landata/*" do

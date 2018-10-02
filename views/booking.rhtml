@@ -93,13 +93,19 @@
 		</transitionexpandheight>
 		<transitionexpandheight>
 			<div v-if="tab == 1">
-				<label class="material-checkbox">
-					<input type="checkbox" v-model="adminShowOnlyBookedUsers">
-					<span>Visa bara bokade användare</span>
-				</label>
-				<div class = "centerHorizontal">
+				<div id="adminUsers">
+					<p>{{lanData["booked"] + " bokade personer "}}</p>
+					<vuebutton @click="downloadExcel" :text="'Ladda ner Excel fil'"></vuebutton>
+				</div>
+
+				<div>
+					<label class="material-checkbox">
+						<input type="checkbox" v-model="adminShowOnlyBookedUsers">
+						<span>Visa bara bokade användare</span>
+					</label>
 					<vuebutton @click="adminCancel()" :text="'Avboka'" :disabled="!adminSelectedUser || !adminSelectedUser['seat']" :loading="adminIsCanceling"></vuebutton>
 				</div>
+
 				<table class = "adminTable">
 					<tr>
 						<th>Namn</th>
@@ -130,7 +136,11 @@
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
+<% if Sinatra::Application.environment == :development %>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+<% else %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.min.js"></script>
+<% end %>
 <script src="transitionexpandheight.js"></script>
 <script src="transitionexpandwidth.js"></script>
 <script src="vuebutton.js"></script>

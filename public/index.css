@@ -419,3 +419,16 @@ input[type=text], input[type=email], input[type=password] {
   transform: translate(5.5px, 1px) rotate(45deg);
   -ms-transform: translate(5.5px, 2px) rotate(45deg);
 }
+
+.material-checkbox span {
+  font-size: 20px;
+}
+
+#adminUsers {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+#adminUsers p {
+  display: inline-block;
+}

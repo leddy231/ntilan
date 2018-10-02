@@ -231,6 +231,16 @@ const VUEApp = new Vue({
 			VUEApp.adminSelectedUser = false,
 			VUEApp.adminIsCanceling = false,
 			VUEApp.newUser = false
+		},
+		downloadExcel: () => {
+			firebase.auth().currentUser.getIdToken(true).then((idToken) => {
+				var link = document.createElement("a");
+				link.href = "/lanexcel/" + idToken;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				delete link;
+			})
 		}
 	},
 	mounted: () => {
