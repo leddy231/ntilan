@@ -259,7 +259,6 @@ end
 get "/spinner" do
 	erb :spinner
 end
-
 not_found do
   status 404
   "Ya broke it"
