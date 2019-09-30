@@ -43,7 +43,7 @@ GEM
     os (0.9.6)
     public_suffix (3.0.2)
     rack (2.0.5)
-    rack-protection (2.0.5)
+    rack-protection (2.0.7)
       rack
     rack-ssl (1.4.1)
       rack
@@ -60,12 +60,12 @@ GEM
       faraday (~> 0.9)
       jwt (>= 1.5, < 3.0)
       multi_json (~> 1.10)
-    sinatra (2.0.5)
+    sinatra (2.0.7)
       mustermann (~> 1.0)
       rack (~> 2.0)
-      rack-protection (= 2.0.5)
+      rack-protection (= 2.0.7)
       tilt (~> 2.0)
-    tilt (2.0.9)
+    tilt (2.0.10)
 
 PLATFORMS
   ruby
@@ -78,12 +78,12 @@ DEPENDENCIES
   jwt (>= 2.1.0)
   mini-heroku (>= 0.2.6)
   rack-ssl (>= 1.4.1)
-  rubyXL (>= 3.4.2)
-  sanitize (>= 5.0.0)
-  sinatra (>= 2.0.5)
+  rubyXL (>= 3.3.30)
+  sanitize (>= 4.6.6)
+  sinatra (>= 2.0.7)
 
 RUBY VERSION
-   ruby 2.5.3p105
+   ruby 2.4.3p205
 
 BUNDLED WITH
-   1.17.1
+   2.0.1
