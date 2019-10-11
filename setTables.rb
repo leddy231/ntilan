@@ -52,5 +52,5 @@ sections.times do |s|
 	j["sec#{s}"] = sec
 end
 #puts j.inspect
-$firebase.set("lans/var2019/sections", j)
-puts  $firebase.get("lans/var2019/sections").body
+$firebase.set("lans/host2019/sections", j)
+puts  $firebase.get("lans/host2019/sections").body
